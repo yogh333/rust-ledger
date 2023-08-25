@@ -169,10 +169,17 @@ async fn main() -> anyhow::Result<()> {
 
                 let apdu_seq: Vec<GenericApdu> = serde_json::from_str(data.as_str()).unwrap();
 
+                let start = std::time::SystemTime::now();
+
                 for apdu_input in apdu_seq {
+
+                    let start_apdu = std::time::SystemTime::now();
+
                     let resp = d
                         .request::<GenericApdu>(apdu_input, &mut buff, args.timeout.into())
                         .await;
+
+                    println!("===> apdu duration = {} ms\n", start_apdu.elapsed().unwrap().as_millis());
 
                     match resp {
                         Ok(apdu_output) => {
@@ -182,6 +189,7 @@ async fn main() -> anyhow::Result<()> {
                         Err(e) => println!("Command failed: {e:?}"),
                     }
                 }
+                println!("===> total duration = {} ms\n", start.elapsed().unwrap().as_millis());
             }
             None => {
                 error!("please provide an input file");
